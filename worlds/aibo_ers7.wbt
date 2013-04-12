@@ -1,0 +1,409 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Model of Aibo ERS 7"
+    "Author: Olivier Michel <Olivier.Michel@cyberbotics.com>"
+    "Date: 26 AUG 2002"
+  ]
+  title "Aibo ERS 7"
+}
+Viewpoint {
+  orientation 0.881131 -0.472852 0.00434838 5.7191
+  position 0.352066 2.04545 3.67268
+}
+Background {
+  skyColor [
+    0.435294 0.4 0.317647
+  ]
+}
+PointLight {
+  ambientIntensity 0.5
+  attenuation 0.7 0.7 0.7
+  location 1.2 2 1
+}
+PointLight {
+  ambientIntensity 0.5
+  attenuation 0.7 0.7 0.7
+  location -1.2 2 0.2
+}
+PointLight {
+  ambientIntensity 0.5
+  attenuation 0.7 0.7 0.7
+  location 0 2 -1
+}
+DEF GROUND Solid {
+  children [
+    DEF GREEN1 Transform {
+      translation -1.75 0 -0.9
+      children [
+        Shape {
+          appearance DEF GREEN_APPEARANCE Appearance {
+            material Material {
+              diffuseColor 1 1 1
+              shininess 0.5
+              specularColor 0 0.501961 0
+            }
+            texture ImageTexture {
+              url [
+                "textures/soccer_quarter.png"
+              ]
+            }
+          }
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0 0 0.9
+                1.75 0 0.9
+                1.75 0 0
+                0 0 0
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                0 0
+                1 0
+                1 1
+                0 1
+              ]
+            }
+            coordIndex [
+              0 1 2 3 -1
+            ]
+            texCoordIndex [
+              0 1 2 3
+            ]
+          }
+        }
+      ]
+    }
+    DEF GREEN2 Transform {
+      translation -1.75 0 0
+      children [
+        Shape {
+          appearance USE GREEN_APPEARANCE
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0 0 0.9
+                1.75 0 0.9
+                1.75 0 0
+                0 0 0
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                0 1
+                1 1
+                1 0
+                0 0
+              ]
+            }
+            coordIndex [
+              0 1 2 3 -1
+            ]
+            texCoordIndex [
+              0 1 2 3
+            ]
+          }
+        }
+      ]
+    }
+    DEF GREEN3 Transform {
+      translation 1.75 0 0
+      rotation 0 1 0 3.14159
+      children [
+        Shape {
+          appearance USE GREEN_APPEARANCE
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0 0 0.9
+                1.75 0 0.9
+                1.75 0 0
+                0 0 0
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                0 1
+                1 1
+                1 0
+                0 0
+              ]
+            }
+            coordIndex [
+              0 1 2 3 -1
+            ]
+            texCoordIndex [
+              0 1 2 3
+            ]
+          }
+        }
+      ]
+    }
+    DEF GREEN3 Transform {
+      translation 1.75 0 0.9
+      rotation 0 1 0 3.14159
+      children [
+        Shape {
+          appearance USE GREEN_APPEARANCE
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0 0 0.9
+                1.75 0 0.9
+                1.75 0 0
+                0 0 0
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                0 0
+                1 0
+                1 1
+                0 1
+              ]
+            }
+            coordIndex [
+              0 1 2 3 -1
+            ]
+            texCoordIndex [
+              0 1 2 3
+            ]
+          }
+        }
+      ]
+    }
+  ]
+  name "ground"
+  boundingObject Plane {
+    size 4 3
+  }
+  locked TRUE
+}
+DEF FRAME Solid {
+  locked TRUE
+}
+DEF BLUE_GOAL Solid {
+  children [
+    DEF BLUE_ROOF Transform {
+      translation 1.625 0.305 0
+      children [
+        Shape {
+          appearance DEF BLUE_APPEARANCE Appearance {
+            material Material {
+              diffuseColor 0 0 1
+            }
+          }
+          geometry DEF GOAL_ROOF_GEOMETRY Box {
+            size 0.25 0.01 0.61
+          }
+        }
+      ]
+    }
+    DEF BLUE_BACK Transform {
+      translation 1.75 0.15 0
+      children [
+        Shape {
+          appearance USE BLUE_APPEARANCE
+          geometry DEF GOAL_BACK_GEOMETRY Box {
+            size 0.02 0.3 0.6
+          }
+        }
+      ]
+    }
+    DEF BLUE_LEFT Transform {
+      translation 1.625 0.15 0.3
+      rotation 0 1 0 1.57
+      children [
+        Shape {
+          appearance USE BLUE_APPEARANCE
+          geometry DEF GOAL_SIDE_GEOMETRY Box {
+            size 0.02 0.3 0.25
+          }
+        }
+      ]
+    }
+    DEF BLUE_RIGHT Transform {
+      translation 1.625 0.15 -0.3
+      rotation 0 1 0 1.57
+      children [
+        Shape {
+          appearance USE BLUE_APPEARANCE
+          geometry USE GOAL_SIDE_GEOMETRY
+        }
+      ]
+    }
+  ]
+  boundingObject Group {
+    children [
+      USE BLUE_RIGHT
+      USE BLUE_LEFT
+      USE BLUE_BACK
+      USE BLUE_ROOF
+    ]
+  }
+  locked TRUE
+}
+DEF YELLOW_GOAL Solid {
+  children [
+    DEF YELLOW_ROOF Transform {
+      translation -1.625 0.305 0
+      children [
+        Shape {
+          appearance DEF YELLOW_APPEARANCE Appearance {
+            material Material {
+              diffuseColor 1 1 0
+            }
+          }
+          geometry USE GOAL_ROOF_GEOMETRY
+        }
+      ]
+    }
+    DEF YELLOW_BACK Transform {
+      translation -1.75 0.15 0
+      children [
+        Shape {
+          appearance USE YELLOW_APPEARANCE
+          geometry USE GOAL_BACK_GEOMETRY
+        }
+      ]
+    }
+    DEF YELLOW_LEFT_SIDE Transform {
+      translation -1.62 0.15 -0.3
+      rotation 0 1 0 1.57
+      children [
+        Shape {
+          appearance USE YELLOW_APPEARANCE
+          geometry USE GOAL_SIDE_GEOMETRY
+        }
+      ]
+    }
+    DEF YELLOW_RIGHT_SIDE Transform {
+      translation -1.62 0.15 0.3
+      rotation 0 1 0 1.57
+      children [
+        Shape {
+          appearance USE YELLOW_APPEARANCE
+          geometry USE GOAL_SIDE_GEOMETRY
+        }
+      ]
+    }
+  ]
+  boundingObject Group {
+    children [
+      USE YELLOW_RIGHT_SIDE
+      USE YELLOW_LEFT_SIDE
+      USE YELLOW_BACK
+      USE YELLOW_ROOF
+    ]
+  }
+  locked TRUE
+}
+DEF LONG_INCLINATION_MINUS Solid {
+  translation 0 0.05 -0.98
+  rotation 1 0 0 0.7854
+  children [
+    Shape {
+      appearance DEF INCLINATION_MATERIAL Appearance {
+        material Material {
+          diffuseColor 0 0.501961 0
+        }
+      }
+      geometry DEF LONG_INCLINATION_BOX Box {
+        size 3.3 0.05 0.2
+      }
+    }
+  ]
+  boundingObject USE LONG_INCLINATION_BOX
+}
+DEF LONG_INCLINATION_PLUS Solid {
+  translation 0 0.05 0.98
+  rotation 1 0 0 -0.7854
+  children [
+    Shape {
+      appearance USE INCLINATION_MATERIAL
+      geometry USE LONG_INCLINATION_BOX
+    }
+  ]
+  boundingObject USE LONG_INCLINATION_BOX
+}
+DEF SHORT_INCLINATION_YELLOW_RIGHT Solid {
+  translation -1.58 0.05 0.68
+  rotation 0 0 1 -0.7854
+  children [
+    Shape {
+      appearance USE INCLINATION_MATERIAL
+      geometry DEF SHORT_INCLINATION_BOX Box {
+        size 0.2 0.05 0.75
+      }
+    }
+  ]
+  boundingObject USE SHORT_INCLINATION_BOX
+}
+DEF SHORT_INCLINATION_YELLOW_LEFT Solid {
+  translation -1.58 0.05 -0.68
+  rotation 0 0 1 -0.7854
+  children [
+    Shape {
+      appearance USE INCLINATION_MATERIAL
+      geometry USE SHORT_INCLINATION_BOX
+    }
+  ]
+  boundingObject USE SHORT_INCLINATION_BOX
+}
+DEF SHORT_INCLINATION_BLUE_RIGHT Solid {
+  translation 1.58 0.05 -0.68
+  rotation 0 0 1 0.7854
+  children [
+    Shape {
+      appearance USE INCLINATION_MATERIAL
+      geometry USE SHORT_INCLINATION_BOX
+    }
+  ]
+  boundingObject USE SHORT_INCLINATION_BOX
+}
+DEF SHORT_INCLINATION_BLUE_LEFT Solid {
+  translation 1.58 0.05 0.68
+  rotation 0 0 1 0.7854
+  children [
+    Shape {
+      appearance USE INCLINATION_MATERIAL
+      geometry USE SHORT_INCLINATION_BOX
+    }
+  ]
+  boundingObject USE SHORT_INCLINATION_BOX
+}
+DEF BALL Solid {
+  translation -0.2 0.0348418 -0.106338
+  children [
+    DEF BALL_SHAPE Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.7
+          diffuseColor 1 0.0705882 0.403922
+          shininess 0.5
+          specularColor 1 0 0
+        }
+      }
+      geometry Sphere {
+        radius 0.035
+      }
+    }
+  ]
+  boundingObject USE BALL_SHAPE
+  physics Physics {
+    density -1
+    mass 0.1
+    damping Damping {
+    }
+  }
+}
+Aibo_ERS7 {
+  translation -1.2931 0.143515 -5.90791e-06
+  rotation 0.0246373 0.999393 0.0246143 -1.57061
+  controller "MyController"
+  name "aibo"
+}
+      
+

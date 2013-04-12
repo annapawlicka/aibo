@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file:///Applications/Webots/projects/languages/java/src/SWIG_generated_files/SWIG_generated_files.iml" filepath="/Applications/Webots/projects/languages/java/src/SWIG_generated_files/SWIG_generated_files.iml" />
+      <module fileurl="file://$PROJECT_DIR$/aibo.iml" filepath="$PROJECT_DIR$/aibo.iml" />
+    </modules>
+  </component>
+</project>
+
