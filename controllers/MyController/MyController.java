@@ -81,8 +81,6 @@ public class MyController extends Robot {
             }
             // Get best loop
             int bestLoop = population.getBestLoop();
-            //int randomLoop = population.getRandomCuriosityLoop();
-            //System.out.println("Index: "+bestLoop);
             // Send motor actions to joints
             output = population.getPopulation().get(bestLoop).getMotorActions();
             for(int j=0; j< motorActions.length; j++){
@@ -90,21 +88,10 @@ public class MyController extends Robot {
             }
             // Apply actions to randomly chosen joints
             for(int k=0; k< motorActions.length; k++){
-                if(joints[k].getMaxPosition() < motorActions[k]){
-                    //System.out.println("Value too high: "+actions[k]);
-                    //actions[k] = actions[k]/4;
-                }
-
-                if(joints[k].getMinPosition() > motorActions[k]){
-                    //System.out.println("Value too low: "+actions[k]);
-                    //actions[k] = actions[k] * -2;
-                }
-
                 joints[k].setPosition(50* motorActions[k]);
             }
             // Assess fitness of the best loop
             updateSensorReadings();
-            System.out.println("Current distance: "+currentDistance);
             oldDistance = currentDistance;
             population.getPopulation().get(bestLoop).updateFitness(oldDistance, currentDistance);
             // Evolve actors
@@ -126,7 +113,6 @@ public class MyController extends Robot {
             input[i] = joints[i].getPosition();
         }
         currentDistance = chestSensor.getValue();
-        //System.out.println("Chest distance: "+ chestSensor.getValue());
     }
 
     public void initialise() {
