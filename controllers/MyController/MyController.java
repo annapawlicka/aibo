@@ -11,56 +11,70 @@
  * from its initial rotation.
  */
 
-import com.cyberbotics.webots.controller.*;
-import population.LoopPopulation;
+import population.ActorPopulation;
+import population.PredictorPopulation;
+import com.cyberbotics.webots.controller.Camera;
+import com.cyberbotics.webots.controller.Display;
+import com.cyberbotics.webots.controller.Robot;
+import com.cyberbotics.webots.controller.Servo;
+import utils.FilesFunctions;
 
-import java.text.DecimalFormat;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Random;
 
-/**
- * Controller for Aibo simulation.
- *
- * States: distance from red ball, collision detector reading, whether or not readings have repeated 5 times.
- */
+
 public class MyController extends Robot {
 
+    /* Populations */
+    PredictorPopulation predictorPopulation;
+    ActorPopulation actorPopulation;
 
     /* Data structures */
-    LoopPopulation population;
+    double[] errors;
     double[] input;
     double[] output;
-    double[] motorActions;
-    int inputSize;
-
     Servo[] joints;
+    double[] motors;               // Array of doubles that stores motor actions
+
     int timeStep;
+
+    BufferedWriter out1;
+    BufferedWriter out2;
+
     Random rand = new Random();
 
     /* Camera - Aibo's sight */
     Camera camera;
-    int width, height;  // Width and height of the image from camera
-    int[] image;         // Image from camera
 
-    enum BALL_COLOR {RED, GREEN, BLUE, NONE};
-    BALL_COLOR currentColor;
-    int red, blue, green;
+    /* Graph */
+    Display display;
 
-    /* Color distance Sensor - detects red */
-    DistanceSensor distanceSensor;
-    double oldDistance;
-    double currentDistance;
-
-    /* Chest distance sensor */
-    DistanceSensor chestSensor;
 
     public MyController() {
 
         // call the Robot constructor
         super();
+
         joints = new Servo[12];
-        timeStep = 1;
-        currentDistance = -1;
-        inputSize = 4;
+        predictorPopulation = new PredictorPopulation(50, true, 12);
+        actorPopulation = new ActorPopulation(50, true, 12);
+        errors = new double[50];
+        output = new double[12];
+        timeStep = 0;
+
+        FileWriter errorFile = null;
+        FileWriter predictionFile = null;
+        try {
+            errorFile = new FileWriter("errors.txt");
+            predictionFile = new FileWriter("predictions.txt");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        out1 = new BufferedWriter(predictionFile);
+        out2 = new BufferedWriter(errorFile);
 
     }
 
@@ -71,51 +85,90 @@ public class MyController extends Robot {
         // and leave the loop when the simulation is over
         while (step(64) != -1) {
 
+            int noOfActivePredictors = 0;       // Number of active predictors
+            double activePredictorError = 0;    // Current predictor error
 
-            updateSensorReadings();
-
-            // Loop through actors/predictors and decide on actions/predictions
-            for(int i=0; i<population.getPopulationSize(); i++){
-                population.getPopulation().get(i).getActor().act(input, inputSize );
-                population.getPopulation().get(i).getPredictor().predict(input);
-            }
-            // Get best loop
-            int bestLoop = population.getBestLoop();
-            // Send motor actions to joints
-            output = population.getPopulation().get(bestLoop).getMotorActions();
-            for(int j=0; j< motorActions.length; j++){
-                motorActions[j] = output[j];
-            }
-            // Apply actions to randomly chosen joints
-            for(int k=0; k< motorActions.length; k++){
-                joints[k].setPosition(50* motorActions[k]);
-            }
-            // Assess fitness of the best loop
-            updateSensorReadings();
-            oldDistance = currentDistance;
-            population.getPopulation().get(bestLoop).updateFitness(oldDistance, currentDistance);
-            // Evolve actors
-            population.increaseAge();
-
-            if(timeStep % 4 ==0){
-                population.convergeActorConditions(input);
-                population.overwriteWorstActor();
+            // Actual sensorimotor state
+            double[] actualState = new double[12];
+            for (int w = 0; w < actualState.length; w++) {
+                actualState[w] = joints[w].getPosition();
             }
 
-            timeStep++;
+            // Actors decide their actions
+            double[] overallAction = actorPopulation.decideAction(actualState);
 
+            if (timeStep % 2 == 0) {
+                //TODO 1. Get two random individuals 2. Get the fittest 3. Crossover and mutate
+                //actorPopulation.convergeActorConditions(actualState);
+                //actorPopulation.overwriteWorstActor();
+            }
+
+            // Update motor actions with decisions made by actors
+            for (int k = 0; k < motors.length; k++) {
+                motors[k] = overallAction[k];
+            }
+
+                /* Update Predictors */
+
+            for (int z = 0; z < predictorPopulation.getPredictors().length; z++) {
+                // Calculate error of that predictor
+                errors[z] = predictorPopulation.getPredictors()[z].calculateError(actualState);
+
+                if (predictorPopulation.getPredictors()[z].getProbabilityActive() > predictorPopulation.getPredictors()[z].ACTIVE_THRESHOLD) {
+                    activePredictorError += errors[z];
+                    // Increase number of active predictors
+                    noOfActivePredictors++;
+                }
+
+                // Update weights and conditions of Predictors
+                predictorPopulation.getPredictors()[z].updatePrediction(input, actualState);
+                // Increase age of Predictors
+                predictorPopulation.getPredictors()[z].increaseAge();
+            }
+
+            double meanActivePredictorError = activePredictorError / noOfActivePredictors;
+            FilesFunctions.writeErrors(out2, meanActivePredictorError, noOfActivePredictors, timeStep);
+
+                /* Update Actors */
+            for (int a = 0; a < actorPopulation.getNumberOfActors(); a++) {
+                // Increase age
+                this.actorPopulation.getActors()[a].increaseAge();
+            }
+
+            if (timeStep % 2 == 0) {
+                //TODO 1. Get two random individuals 2. Get the fittest 3. Crossover and mutate
+                //predictorPopulation.convergePredictorConditions(actualState);
+                //predictorPopulation.overwriteWorstPredictor();
+            }
         }
 
-    }
-
-    public void updateSensorReadings() {
-        for (int i = 0; i < joints.length; i++) {
-            input[i] = joints[i].getPosition();
+        // Get current sensorimotor state into an array
+        input = new double[12];
+        for (int m = 0; m < input.length; m++) {
+            input[m] = joints[m].getPosition();
         }
-        currentDistance = chestSensor.getValue();
+
+        // Predict
+        for (int i = 0; i < predictorPopulation.getPredictors().length; i++) {
+            predictorPopulation.getPredictors()[i].predict(input);
+        }
+
+        // Make action (initial motor actions are set to 0, hence the first move made by Aibo is to straighten its joints)
+        for (int z = 0; z < motors.length; z++) {
+            joints[z].setPosition(motors[z]);
+        }
+
+            /* Every 10 time steps add pixel to a graph */
+        if (timeStep % 10 == 0) {
+            plot_fitness(timeStep);
+        }
+        timeStep++;
+
     }
 
     public void initialise() {
+
+        timeStep = 0;
 
         /* Initialise joints */
         joints[0] = getServo("PRM:/r2/c1-Joint2:21");
@@ -134,47 +187,47 @@ public class MyController extends Robot {
         /* Initialise camera */
         camera = getCamera("PRM:/r1/c1/c2/c3/i1-FbkImageSensor:F1");
         camera.enable(64);
-        width = camera.getWidth();
-        height = camera.getHeight();
 
-        /* Initialise head (far) distance sensor */
-        distanceSensor = getDistanceSensor("color_sensor");
-        distanceSensor.enable(64);
+        /* Initialise 2D display */
+        display = getDisplay("graph_display");
+        //display.setOpacity(0.0);
+        display.setAlpha(0.7);
+        display.drawLine(10, 10, 10, 290); // Y
+        display.drawLine(10, 290, 290, 290); // X
+        display.drawText("Overall value", 2, 2);
 
-        /* Initialise chest distance sensor */
-        chestSensor = getDistanceSensor("PRM:/p1-Sensor:p1");
-        chestSensor.enable(64);
+        /* Initialise motor actions array */
+        motors = new double[12];
+        for (int i = 0; i < motors.length; i++) {
+            motors[i] = 0;
+        }
+
+        /* Initialise output array */
+        for (int l = 0; l < output.length; l++) {
+            double value = (double) Math.round(rand.nextDouble() * 10000) / 10000;
+            output[l] = -2.4 + (2.4 - (-2.4)) * value;
+        }
+
+        /* Get current sensorimotor state into an array */
+        input = new double[12];
+        for (int m = 0; m < input.length; m++) {
+            input[m] = joints[m].getPosition();
+        }
 
         /* Enable joints */
         for (int i = 0; i < joints.length; i++) {
             joints[i].enablePosition(64);
         }
-
-        /* Initialise inputs */
-        input = new double[12];
-        for (int j = 0; j < input.length; j++) {
-            input[j] = joints[j].getPosition();
-        }
-
-        /* Initialise motor actions */
-        motorActions = new double[12];
-        output = new double[12];
-        for(int i=0; i< motorActions.length; i++){
-            motorActions[i] = 0;
-            output[i] = 0;
-        }
-
-        /* Initialise population */
-        population = new LoopPopulation(50, 12, 12, true);
-
-
         System.out.println("Init completed.");
     }
 
-    public double roundTwoDecimals(double d) {
-        DecimalFormat twoDForm = new DecimalFormat("#.####");
-        return Double.valueOf(twoDForm.format(d));
+    public void plot_fitness(int counter) {
+
+        display.setColor(0xff0000); // red
+        display.drawPixel(20, counter);
+
     }
+
 
     public static void main(String[] args) {
 

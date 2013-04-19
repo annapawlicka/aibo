@@ -6,21 +6,10 @@ import java.io.BufferedWriter;
 
 public class FilesFunctions {
 
-    public static void writeErrors(BufferedWriter out, double err_pe, int na_hist) {
+    public static void writeErrors(BufferedWriter out, double err_pe, int na_hist, int step) {
         try {
-            out.write("Active predictor error: " + (err_pe) + "\n");
-            out.write("Active predictors:      " + (na_hist) + "\n");
-            out.write("\n");
-
-        } catch (Exception e) {
-            System.err.println("Buffer Error: " + e.getMessage());
-        }
-    }
-
-    public static void writeFitness(BufferedWriter out, int fitnessScore, int timeStep) {
-        try {
-            //out.write("Epoch: "+ timeStep);
-            out.write("Actor fitness: " + (fitnessScore) + "\n");
+            out.write("Step " + step + ", Active predictor error: " + (err_pe) + "\n");
+            out.write("Step " + step + ", Active predictors:      " + (na_hist) + "\n");
             out.write("\n");
 
         } catch (Exception e) {
@@ -57,4 +46,3 @@ public class FilesFunctions {
         }
     }
 }
-
